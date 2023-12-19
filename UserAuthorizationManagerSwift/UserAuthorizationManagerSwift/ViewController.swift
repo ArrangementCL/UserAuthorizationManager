@@ -53,40 +53,81 @@ class ViewController: UIViewController {
     func checkCamera() {
         Task {
             let requestResult = await UserAuthorizationManager.checkCameraAuthorize()
-            if !requestResult {
-                await showToast(message: "test") {
-                    UIApplication.shared.nowkeyWindow?.rootViewController?.dismiss(animated: true)
-                }
-            } else {
-                await showToast(message: "test") {
-                    UIApplication.shared.nowkeyWindow?.rootViewController?.dismiss(animated: true)
-                }
+            await showToast(message: requestResult ? "已開啟" : "未開啟") {
+                debugPrint("requestResult :\(requestResult)")
+            }
+        }
+    }
+    
+    func checkMic() {
+        Task {
+            let requestResult = UserAuthorizationManager.checkAudioAuthorize()
+            var msg = ""
+            switch requestResult {
+            case .notDetermined:
+                msg = "notDetermined"
+            case .restricted:
+                msg = "restricted"
+            case .denied:
+                msg = "denied"
+            case .authorized:
+                msg = "authorized"
+            @unknown default:
+                fatalError()
+            }
+            await showToast(message: msg) {
+                debugPrint("requestResult :\(requestResult)")
+            }
+        }
+    }
+    
+    func checkLibrary() {
+        Task {
+            let requestResult = UserAuthorizationManager.checkLibraryAuthorize()
+            var msg = ""
+            switch requestResult {
+            case .notDetermined:
+                msg = "notDetermined"
+            case .restricted:
+                msg = "restricted"
+            case .denied:
+                msg = "denied"
+            case .authorized:
+                msg = "authorized"
+            case .limited:
+                msg = "limited"
+            @unknown default:
+                fatalError()
+            }
+            await showToast(message: msg) {
+                debugPrint("requestResult :\(requestResult)")
             }
         }
     }
     
     @MainActor
     func showToast(message: String?, completionHandler: @escaping () -> Void) async {
-        await Task.detached {
+        Task.detached {
             let alert = await UIAlertController(title: nil, message: message, preferredStyle: .actionSheet)
             await UIApplication.shared.nowkeyWindow?.rootViewController?.present(alert, animated: true) {
-                completionHandler()
+                sleep(1)
+                Task { @MainActor in alert.dismiss(animated: true) {
+                    completionHandler()
+                } }
             }
         }
-        
-        
     }
     
     @IBAction func firstBtnPressed(_ sender: Any) {
-        
+        checkCamera()
     }
     
     @IBAction func secondBtnPressed(_ sender: Any) {
-        
+        checkMic()
     }
     
     @IBAction func thirdBtnPressed(_ sender: Any) {
-        
+        checkLibrary()
     }
     
 }
