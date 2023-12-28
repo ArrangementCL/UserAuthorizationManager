@@ -22,10 +22,6 @@ class ViewController: UIViewController {
         
 //        async '' used in a context that does not support concurrency
         
-//        UserAuthorizationManager.getAuthorize()
-        
-        checkCamera()
-        
         switch UserAuthorizationManager.checkAllAuthorize() {
         case .allAuthorized:
             break
@@ -55,6 +51,7 @@ class ViewController: UIViewController {
             let requestResult = await UserAuthorizationManager.checkCameraAuthorize()
             await showToast(message: requestResult ? "已開啟" : "未開啟") {
                 debugPrint("requestResult :\(requestResult)")
+                self.goDeviceSetting()
             }
         }
     }
@@ -77,6 +74,7 @@ class ViewController: UIViewController {
             }
             await showToast(message: msg) {
                 debugPrint("requestResult :\(requestResult)")
+                self.goDeviceSetting()
             }
         }
     }
@@ -101,6 +99,16 @@ class ViewController: UIViewController {
             }
             await showToast(message: msg) {
                 debugPrint("requestResult :\(requestResult)")
+                self.goDeviceSetting()
+            }
+        }
+    }
+    
+    func goDeviceSetting() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        if UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url) { _ in
+                debugPrint("Go Setting")
             }
         }
     }
